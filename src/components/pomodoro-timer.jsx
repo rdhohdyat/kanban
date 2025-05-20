@@ -13,7 +13,7 @@ export default function PomodoroTimer() {
   };
 
   const [mode, setMode] = useState("pomodoro");
-  const [secondsLeft, setSecondsLeft] = useState<number>(
+  const [secondsLeft, setSecondsLeft] = useState(
     timerModes.pomodoro * 60
   );
   const [isRunning, setIsRunning] = useState(false);

@@ -4,104 +4,113 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type TimerMode = "pomodoro" | "shortBreak" | "longBreak";
+
+// Map of durations for each mode
+const timerModes: Record<TimerMode, number> = {
+  pomodoro: 25,
+  shortBreak: 5,
+  longBreak: 15,
+};
+
 export default function PomodoroTimer() {
-  // Timer modes and their durations in minutes
-  const timerModes = {
-    pomodoro: 25,
-    shortBreak: 5,
-    longBreak: 15
-  };
-  
-  const [mode, setMode] = useState("pomodoro");
-  const [secondsLeft, setSecondsLeft] = useState(timerModes.pomodoro * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [completedPomodoros, setCompletedPomodoros] = useState(0);
-  const intervalRef = useRef(null);
-  
+  const [mode, setMode] = useState<TimerMode>("pomodoro");
+  const [secondsLeft, setSecondsLeft] = useState<number>(
+    timerModes.pomodoro * 60
+  );
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [completedPomodoros, setCompletedPomodoros] = useState<number>(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null); // More specific than `any`
+
   // Reset timer when mode changes
   useEffect(() => {
     handleReset();
   }, [mode]);
-  
+
   // Timer logic
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
         setSecondsLeft((prev) => {
           if (prev <= 1) {
-            clearInterval(intervalRef.current);
+            if (intervalRef.current) clearInterval(intervalRef.current);
             setIsRunning(false);
-            
-            // If pomodoro is complete, increment counter
+
             if (mode === "pomodoro") {
-              setCompletedPomodoros(prev => prev + 1);
-              
-              // Play notification sound if available
+              setCompletedPomodoros((prev) => prev + 1);
+
               const audio = new Audio("/notification.mp3");
-              audio.play().catch(err => console.log("Audio notification failed:", err));
+              audio
+                .play()
+                .catch((err) => console.log("Audio notification failed:", err));
             }
-            
+
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-    
-    return () => clearInterval(intervalRef.current);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [isRunning, mode]);
-  
+
   // Format time as MM:SS
-  const formatTime = (secs) => {
+  const formatTime = (secs: number): string => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
-  
+
   // Reset timer to current mode's duration
-  const handleReset = () => {
-    clearInterval(intervalRef.current);
+  const handleReset = (): void => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     setIsRunning(false);
     setSecondsLeft(timerModes[mode] * 60);
   };
-  
+
   // Calculate progress percentage
-  const calculateProgress = () => {
+  const calculateProgress = (): number => {
     const total = timerModes[mode] * 60;
-    const remaining = secondsLeft;
-    return ((total - remaining) / total) * 100;
+    return ((total - secondsLeft) / total) * 100;
   };
-  
+
   // Get background color based on mode
-  const getBackgroundColor = () => {
+  const getBackgroundColor = (): string => {
     switch (mode) {
-      case "pomodoro": return "from-red-500 to-rose-500";
-      case "shortBreak": return "from-green-500 to-emerald-500";
-      case "longBreak": return "from-blue-500 to-indigo-500";
-      default: return "from-red-500 to-rose-500";
+      case "pomodoro":
+        return "from-red-500 to-rose-500";
+      case "shortBreak":
+        return "from-green-500 to-emerald-500";
+      case "longBreak":
+        return "from-blue-500 to-indigo-500";
+      default:
+        return "from-red-500 to-rose-500";
     }
   };
 
   return (
     <div className="space-y-4">
       {/* Mode selector */}
-      <Tabs 
-        defaultValue="pomodoro" 
-        value={mode} 
+      <Tabs
+        defaultValue="pomodoro"
+        value={mode}
         onValueChange={setMode}
         className="w-full"
       >
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="pomodoro" className="flex items-center">
-            <Brain/>
+            <Brain />
             <span>Fokus</span>
           </TabsTrigger>
           <TabsTrigger value="shortBreak" className="flex items-center">
-            <Coffee/>
+            <Coffee />
             <span>Break</span>
           </TabsTrigger>
           <TabsTrigger value="longBreak" className="flex items-center">
-            <Coffee/>
+            <Coffee />
             <span>Break Panjang</span>
           </TabsTrigger>
         </TabsList>
@@ -112,26 +121,34 @@ export default function PomodoroTimer() {
         <div className="relative w-48 h-48 mb-4">
           {/* Background circle */}
           <div className="absolute inset-0 rounded-full bg-muted opacity-20"></div>
-          
+
           {/* Progress circle */}
-          <div 
+          <div
             className={cn(
               "absolute inset-0 rounded-full bg-gradient-to-br",
               getBackgroundColor()
             )}
-            style={{ 
-              clipPath: `polygon(50% 50%, 50% 0%, ${calculateProgress() > 75 ? '100% 0%' : ''} ${calculateProgress() > 50 ? '100% 100%' : ''} ${calculateProgress() > 25 ? '0% 100%' : ''} ${calculateProgress() > 0 ? '0% 0%' : ''} 50% 0%)`,
-              transform: 'rotate(90deg)',
+            style={{
+              clipPath: `polygon(50% 50%, 50% 0%, ${
+                calculateProgress() > 75 ? "100% 0%" : ""
+              } ${calculateProgress() > 50 ? "100% 100%" : ""} ${
+                calculateProgress() > 25 ? "0% 100%" : ""
+              } ${calculateProgress() > 0 ? "0% 0%" : ""} 50% 0%)`,
+              transform: "rotate(90deg)",
             }}
           ></div>
-          
+
           {/* Inner circle with time */}
           <div className="absolute inset-2 rounded-full bg-background flex items-center justify-center flex-col">
             <div className="text-4xl font-mono font-bold">
               {formatTime(secondsLeft)}
             </div>
             <div className="text-sm text-muted-foreground">
-              {mode === "pomodoro" ? "Fokus" : mode === "shortBreak" ? "Break Pendek" : "Break Panjang"}
+              {mode === "pomodoro"
+                ? "Fokus"
+                : mode === "shortBreak"
+                ? "Break Pendek"
+                : "Break Panjang"}
             </div>
           </div>
         </div>
@@ -140,20 +157,22 @@ export default function PomodoroTimer() {
       {/* Control buttons */}
       <div className="flex justify-center gap-2">
         {!isRunning ? (
-          <Button 
-            onClick={() => setIsRunning(true)} 
+          <Button
+            onClick={() => setIsRunning(true)}
             className={cn(
-              "flex items-center gap-1", 
-              mode === "pomodoro" ? "bg-red-500 hover:bg-red-600" : 
-              mode === "shortBreak" ? "bg-green-500 hover:bg-green-600" : 
-              "bg-blue-500 hover:bg-blue-600"
+              "flex items-center gap-1",
+              mode === "pomodoro"
+                ? "bg-red-500 hover:bg-red-600"
+                : mode === "shortBreak"
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-blue-500 hover:bg-blue-600"
             )}
           >
             <Play size={16} />
             <span>Mulai</span>
           </Button>
         ) : (
-          <Button 
+          <Button
             onClick={() => setIsRunning(false)}
             className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600"
           >
@@ -161,8 +180,8 @@ export default function PomodoroTimer() {
             <span>Jeda</span>
           </Button>
         )}
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={handleReset}
           className="flex items-center gap-1"
         >

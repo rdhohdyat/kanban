@@ -4,21 +4,21 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type TimerMode = "pomodoro" | "shortBreak" | "longBreak";
+
 export default function PomodoroTimer() {
-  // Timer modes and their durations in minutes
-  const timerModes = {
+  const timerModes: Record<TimerMode, number> = {
     pomodoro: 25,
     shortBreak: 5,
     longBreak: 15,
   };
 
-  const [mode, setMode] = useState("pomodoro");
-  const [secondsLeft, setSecondsLeft] = useState<number>(
-    timerModes.pomodoro * 60
-  );
+  const [mode, setMode] = useState<TimerMode>("pomodoro");
+  const [secondsLeft, setSecondsLeft] = useState<number>(timerModes.pomodoro * 60);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [completedPomodoros, setCompletedPomodoros] = useState<number>(0);
-  const intervalRef = useRef<any>(null);
+  // Perbaikan tipe untuk intervalRef
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Reset timer when mode changes
   useEffect(() => {
@@ -31,7 +31,9 @@ export default function PomodoroTimer() {
       intervalRef.current = setInterval(() => {
         setSecondsLeft((prev) => {
           if (prev <= 1) {
-            clearInterval(intervalRef.current);
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+            }
             setIsRunning(false);
 
             // If pomodoro is complete, increment counter
@@ -52,32 +54,38 @@ export default function PomodoroTimer() {
       }, 1000);
     }
 
-    return () => clearInterval(intervalRef.current);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [isRunning, mode]);
 
   // Format time as MM:SS
-  const formatTime = (secs : number) => {
+  const formatTime = (secs: number): string => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
   // Reset timer to current mode's duration
-  const handleReset = () => {
-    clearInterval(intervalRef.current);
+  const handleReset = (): void => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
     setIsRunning(false);
     setSecondsLeft(timerModes[mode] * 60);
   };
 
   // Calculate progress percentage
-  const calculateProgress = () => {
+  const calculateProgress = (): number => {
     const total = timerModes[mode] * 60;
     const remaining = secondsLeft;
     return ((total - remaining) / total) * 100;
   };
 
   // Get background color based on mode
-  const getBackgroundColor = () => {
+  const getBackgroundColor = (): string => {
     switch (mode) {
       case "pomodoro":
         return "from-red-500 to-rose-500";
@@ -85,9 +93,31 @@ export default function PomodoroTimer() {
         return "from-green-500 to-emerald-500";
       case "longBreak":
         return "from-blue-500 to-indigo-500";
-      default:
-        return "from-red-500 to-rose-500";
     }
+  };
+
+  // Perbaikan untuk clipPath pada progress circle
+  const getProgressClipPath = (): string => {
+    const progress = calculateProgress();
+    let clipPath = "polygon(50% 50%, 50% 0%";
+    
+    if (progress >= 12.5) clipPath += ", 75% 0%";
+    if (progress >= 25) clipPath += ", 100% 0%";
+    if (progress >= 37.5) clipPath += ", 100% 25%";
+    if (progress >= 50) clipPath += ", 100% 50%";
+    if (progress >= 62.5) clipPath += ", 100% 75%";
+    if (progress >= 75) clipPath += ", 100% 100%";
+    if (progress >= 87.5) clipPath += ", 75% 100%";
+    if (progress >= 100) clipPath += ", 50% 100%";
+    if (progress >= 100) clipPath += ", 25% 100%";
+    if (progress >= 100) clipPath += ", 0% 100%";
+    if (progress >= 100) clipPath += ", 0% 75%";
+    if (progress >= 100) clipPath += ", 0% 50%";
+    if (progress >= 100) clipPath += ", 0% 25%";
+    if (progress >= 100) clipPath += ", 0% 0%";
+    
+    clipPath += ")";
+    return clipPath;
   };
 
   return (
@@ -96,20 +126,20 @@ export default function PomodoroTimer() {
       <Tabs
         defaultValue="pomodoro"
         value={mode}
-        onValueChange={setMode}
+        onValueChange={(value) => setMode(value as TimerMode)}
         className="w-full"
       >
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="pomodoro" className="flex items-center">
-            <Brain />
+            <Brain size={16} className="mr-1" />
             <span>Fokus</span>
           </TabsTrigger>
           <TabsTrigger value="shortBreak" className="flex items-center">
-            <Coffee />
+            <Coffee size={16} className="mr-1" />
             <span>Break</span>
           </TabsTrigger>
           <TabsTrigger value="longBreak" className="flex items-center">
-            <Coffee />
+            <Coffee size={16} className="mr-1" />
             <span>Break Panjang</span>
           </TabsTrigger>
         </TabsList>
@@ -128,12 +158,8 @@ export default function PomodoroTimer() {
               getBackgroundColor()
             )}
             style={{
-              clipPath: `polygon(50% 50%, 50% 0%, ${
-                calculateProgress() > 75 ? "100% 0%" : ""
-              } ${calculateProgress() > 50 ? "100% 100%" : ""} ${
-                calculateProgress() > 25 ? "0% 100%" : ""
-              } ${calculateProgress() > 0 ? "0% 0%" : ""} 50% 0%)`,
-              transform: "rotate(90deg)",
+              clipPath: getProgressClipPath(),
+              transform: "rotate(-90deg)",
             }}
           ></div>
 

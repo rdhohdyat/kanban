@@ -2,7 +2,7 @@ import { useDrag } from "react-dnd";
 import { Card, CardContent } from "@/components/ui/card";
 import { Grip, MoreVertical, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -13,12 +13,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type StatusKey = "todo" | "inProgress" | "done";
+
+interface TaskCardProps {
+  item: {
+    title: string;
+    // Tambahkan properti lain dari `item` jika perlu
+  };
+  index: number;
+  columnKey: StatusKey;
+  onDelete: () => void;
+}
+
 export default function TaskCard({
   item,
   index,
   columnKey,
   onDelete,
-}: any) {
+}: TaskCardProps) {
   const [{ isDragging }, drag] = useDrag({
     type: "task",
     item: { ...item, index, source: columnKey },
@@ -29,10 +41,9 @@ export default function TaskCard({
 
   const [isHovered, setIsHovered] = useState(false);
 
-
   // Determine status badge
   const getStatusBadge = () => {
-    const statusMap = {
+    const statusMap: Record<StatusKey, { color: string; label: string }> = {
       todo: {
         color: "bg-blue-500/20 text-blue-500 hover:bg-blue-500/30",
         label: "Todo",
@@ -59,9 +70,17 @@ export default function TaskCard({
     );
   };
 
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      drag(ref.current);
+    }
+  }, [drag]);
+
   return (
     <Card
-      ref={drag}
+      ref={ref}
       className={cn(
         "mb-2 border border-border transition-all duration-200",
         isDragging ? "opacity-50" : "opacity-100",
@@ -92,7 +111,9 @@ export default function TaskCard({
               <DropdownMenuContent>
                 <DropdownMenuLabel>Action</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={onDelete}>Hapus</DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                  Hapus
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

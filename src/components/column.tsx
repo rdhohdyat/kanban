@@ -2,6 +2,7 @@ import TaskCard from "./task-card";
 import { useDrop } from "react-dnd";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { ListTodo, Loader2, CheckCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export default function Column({
@@ -12,7 +13,7 @@ export default function Column({
 }: any) {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: "task",
-    drop: (item : any) => {
+    drop: (item: any) => {
       if (item.source === columnKey) return;
 
       const sourceItems = [...columns[item.source].items];
@@ -67,7 +68,7 @@ export default function Column({
   };
 
   // In your parent component (e.g., KanbanBoard.jsx)
-  const removeTask = (index : any) => {
+  const removeTask = (index: any) => {
     const newItems = [...column.items];
     newItems.splice(index, 1);
     setColumns({
@@ -96,9 +97,17 @@ export default function Column({
     return "";
   };
 
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      drop(ref.current);
+    }
+  }, [drop]);
+
   return (
     <Card
-      ref={drop}
+      ref={ref}
       className={cn(
         "min-h-[500px] max-h-[500px] min-w-[250px] flex flex-col transition-colors duration-200",
         getColumnBackgroundStyles(),

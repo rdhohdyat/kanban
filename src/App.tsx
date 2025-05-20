@@ -63,7 +63,7 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <DndProvider backend={HTML5Backend}>
-        <div className="min-h-screen bg-background p-6">
+        <div className="min-h-screen bg-background sm:p-6 p-3">
           <div className="max-w-8xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">

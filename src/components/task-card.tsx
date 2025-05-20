@@ -29,36 +29,6 @@ export default function TaskCard({
 
   const [isHovered, setIsHovered] = useState(false);
 
-  // Determine the priority badge color
-  const getPriorityBadge = () => {
-    if (!item.priority) return null;
-
-    const priorityMap = {
-      high: {
-        color: "bg-red-500/20 text-red-500 hover:bg-red-500/30",
-        label: "Tinggi",
-      },
-      medium: {
-        color: "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
-        label: "Sedang",
-      },
-      low: {
-        color: "bg-green-500/20 text-green-500 hover:bg-green-500/30",
-        label: "Rendah",
-      },
-    };
-
-    const priority = priorityMap[item.priority] || priorityMap.medium;
-
-    return (
-      <Badge
-        variant="outline"
-        className={cn("text-xs font-normal", priority.color)}
-      >
-        {priority.label}
-      </Badge>
-    );
-  };
 
   // Determine status badge
   const getStatusBadge = () => {
@@ -112,8 +82,6 @@ export default function TaskCard({
             {getStatusBadge()}
           </div>
           <div className="flex items-center">
-            {getPriorityBadge()}
-
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <MoreVertical

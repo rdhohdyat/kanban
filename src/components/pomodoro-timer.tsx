@@ -121,7 +121,7 @@ export default function PomodoroTimer() {
           {/* Background circle */}
           <div className="absolute inset-0 rounded-full bg-muted opacity-20"></div>
 
-          {/* Progress circle */}
+          {/* Progress circle */} 
           <div
             className={cn(
               "absolute inset-0 rounded-full bg-gradient-to-br",

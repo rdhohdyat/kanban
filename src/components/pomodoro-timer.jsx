@@ -4,23 +4,21 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type TimerMode = "pomodoro" | "shortBreak" | "longBreak";
-
-// Map of durations for each mode
-const timerModes: Record<TimerMode, number> = {
-  pomodoro: 25,
-  shortBreak: 5,
-  longBreak: 15,
-};
-
 export default function PomodoroTimer() {
-  const [mode, setMode] = useState<TimerMode>("pomodoro");
+  // Timer modes and their durations in minutes
+  const timerModes = {
+    pomodoro: 25,
+    shortBreak: 5,
+    longBreak: 15,
+  };
+
+  const [mode, setMode] = useState("pomodoro");
   const [secondsLeft, setSecondsLeft] = useState<number>(
     timerModes.pomodoro * 60
   );
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [completedPomodoros, setCompletedPomodoros] = useState<number>(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null); // More specific than `any`
+  const [isRunning, setIsRunning] = useState(false);
+  const [completedPomodoros, setCompletedPomodoros] = useState(0);
+  const intervalRef = useRef(null);
 
   // Reset timer when mode changes
   useEffect(() => {
@@ -33,12 +31,14 @@ export default function PomodoroTimer() {
       intervalRef.current = setInterval(() => {
         setSecondsLeft((prev) => {
           if (prev <= 1) {
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            clearInterval(intervalRef.current);
             setIsRunning(false);
 
+            // If pomodoro is complete, increment counter
             if (mode === "pomodoro") {
               setCompletedPomodoros((prev) => prev + 1);
 
+              // Play notification sound if available
               const audio = new Audio("/notification.mp3");
               audio
                 .play()
@@ -52,33 +52,32 @@ export default function PomodoroTimer() {
       }, 1000);
     }
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => clearInterval(intervalRef.current);
   }, [isRunning, mode]);
 
   // Format time as MM:SS
-  const formatTime = (secs: number): string => {
+  const formatTime = (secs) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
   // Reset timer to current mode's duration
-  const handleReset = (): void => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+  const handleReset = () => {
+    clearInterval(intervalRef.current);
     setIsRunning(false);
     setSecondsLeft(timerModes[mode] * 60);
   };
 
   // Calculate progress percentage
-  const calculateProgress = (): number => {
+  const calculateProgress = () => {
     const total = timerModes[mode] * 60;
-    return ((total - secondsLeft) / total) * 100;
+    const remaining = secondsLeft;
+    return ((total - remaining) / total) * 100;
   };
 
   // Get background color based on mode
-  const getBackgroundColor = (): string => {
+  const getBackgroundColor = () => {
     switch (mode) {
       case "pomodoro":
         return "from-red-500 to-rose-500";

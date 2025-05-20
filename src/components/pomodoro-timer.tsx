@@ -132,15 +132,15 @@ export default function PomodoroTimer() {
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="pomodoro" className="flex items-center">
             <Brain size={16} className="mr-1" />
-            <span>Fokus</span>
+            <span className="hidden sm:block">Fokus</span>
           </TabsTrigger>
           <TabsTrigger value="shortBreak" className="flex items-center">
             <Coffee size={16} className="mr-1" />
-            <span>Break</span>
+            <span className="hidden sm:block">Break</span>
           </TabsTrigger>
           <TabsTrigger value="longBreak" className="flex items-center">
             <Coffee size={16} className="mr-1" />
-            <span>Break Panjang</span>
+            <span className="hidden sm:block">Break Panjang</span>
           </TabsTrigger>
         </TabsList>
       </Tabs>

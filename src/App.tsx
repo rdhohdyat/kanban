@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import PomodoroTimer from "./components/pomodoro-timer";
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
-import { Plus, CheckCircle2, ListTodo, ClockIcon } from "lucide-react";
+import { Plus, ClockIcon } from "lucide-react";
 import Logo from "./components/logo";
 
 const defaultColumns = {

@@ -13,12 +13,12 @@ export default function PomodoroTimer() {
   };
 
   const [mode, setMode] = useState("pomodoro");
-  const [secondsLeft, setSecondsLeft] = useState(
+  const [secondsLeft, setSecondsLeft] = useState<number>(
     timerModes.pomodoro * 60
   );
-  const [isRunning, setIsRunning] = useState(false);
-  const [completedPomodoros, setCompletedPomodoros] = useState(0);
-  const intervalRef = useRef(null);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [completedPomodoros, setCompletedPomodoros] = useState<number>(0);
+  const intervalRef = useRef<any>(null);
 
   // Reset timer when mode changes
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function PomodoroTimer() {
   }, [isRunning, mode]);
 
   // Format time as MM:SS
-  const formatTime = (secs) => {
+  const formatTime = (secs : number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;

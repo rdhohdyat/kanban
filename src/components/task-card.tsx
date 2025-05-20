@@ -1,6 +1,6 @@
 import { useDrag } from "react-dnd";
 import { Card, CardContent } from "@/components/ui/card";
-import { Grip, Calendar, Clock, MoreVertical, CheckCircle } from "lucide-react";
+import { Grip, MoreVertical, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
